@@ -512,6 +512,9 @@ function shuffleArray(array) {
 // -------------------------------------------------------------
 // Interactive Chit Draw (Mystery Box / Lottery Reveal Mode)
 // -------------------------------------------------------------
+// -------------------------------------------------------------
+// Interactive Chit Draw (Mystery Box / Lottery Reveal Mode)
+// -------------------------------------------------------------
 export function openChitDrawModal() {
   const division = storage.getActiveDivision();
   const categories = storage.getCategories();
@@ -523,18 +526,22 @@ export function openChitDrawModal() {
 
   // Track randomized chits per category so order is thoroughly shuffled
   const shuffledChitsMap = {};
+  
+  // Track randomized captain turn order per category (distinct random lineup per category!)
+  const captainTurnOrderMap = {};
+  const currentCaptainTurnIndex = {};
 
   const modal = document.createElement('div');
   modal.className = 'modal-backdrop chit-draw-modal-backdrop';
   modal.id = 'chit-draw-modal';
 
-  const renderChitDrawInner = (forceReShuffle = false) => {
+  const renderChitDrawInner = (forceReShuffleChits = false, forceReShuffleCaptains = false) => {
     const allPlayers = storage.getPlayers(division);
     const unassignedInCat = allPlayers.filter(p => p.category === selectedCategory && !p.teamId);
     const teams = storage.getTeams(division);
 
-    // Shuffle the unassigned players inside this category so nobody knows sequence
-    if (!shuffledChitsMap[selectedCategory] || forceReShuffle) {
+    // 1. Randomize chits order inside this category
+    if (!shuffledChitsMap[selectedCategory] || forceReShuffleChits) {
       shuffledChitsMap[selectedCategory] = shuffleArray(unassignedInCat);
     } else {
       const validIds = new Set(unassignedInCat.map(p => p.id));
@@ -546,7 +553,18 @@ export function openChitDrawModal() {
       }
     }
 
+    // 2. Randomize Captain Turn Selection Lineup for this category
+    if (!captainTurnOrderMap[selectedCategory] || forceReShuffleCaptains) {
+      captainTurnOrderMap[selectedCategory] = shuffleArray(teams);
+      currentCaptainTurnIndex[selectedCategory] = 0;
+    }
+
+    const turnList = captainTurnOrderMap[selectedCategory] || [];
+    const turnIdx = currentCaptainTurnIndex[selectedCategory] || 0;
+    const activeCaptainTeam = turnList.length > 0 ? turnList[turnIdx % turnList.length] : null;
+    const turnNumber = (turnIdx % (turnList.length || 1)) + 1;
     const chitsToDisplay = shuffledChitsMap[selectedCategory] || [];
+    const isFullscreen = modal.classList.contains('modal-true-fullscreen');
 
     modal.innerHTML = `
       <div class="modal-card modal-fullscreen-chit glass-panel">
@@ -555,19 +573,29 @@ export function openChitDrawModal() {
             <div class="draw-header-brand">
               <img src="/images/logo.jpg" alt="JSG Federation Logo" class="draw-jsg-logo" />
               <div>
-                <span class="live-tag"><span class="live-dot"></span> LIVE CHIT DRAW ROOM</span>
+                <div class="brand-badge-row">
+                  <span class="live-status-pill"><span class="live-dot"></span> LIVE CHIT DRAFT ROOM</span>
+                  <span class="edition-pill">BIG SCREEN MODE</span>
+                </div>
                 <h2>JSG-PC BOX CRICKET LEAGUE 2026</h2>
-                <p>Jain Social Groups Int. Federation • Sealed chits are randomized for fair selection.</p>
+                <p>Category <strong>${selectedCategory}</strong> • Randomized Captain Turn Selection & Fair Chits</p>
               </div>
             </div>
           </div>
-          <button class="btn-close-modal" id="btn-close-draw-modal">×</button>
+          
+          <div class="modal-header-actions">
+            <button id="btn-modal-fullscreen" class="btn btn-sm btn-gold btn-fs" title="Toggle Big Full Screen (Wall / Projector View)">
+              <i data-lucide="${isFullscreen ? 'minimize' : 'maximize'}"></i>
+              <span class="fs-text">${isFullscreen ? 'Exit Full Screen' : 'Big Full Screen ⛶'}</span>
+            </button>
+            <button class="btn-close-modal" id="btn-close-draw-modal">×</button>
+          </div>
         </div>
 
-        <!-- Category Picker Bar & Shuffle Control -->
+        <!-- Category Picker Bar & Controls -->
         <div class="draw-cat-selector">
           <div class="draw-cat-left">
-            <span class="label">Select Draw Category:</span>
+            <span class="label">Select Category:</span>
             <div class="draw-cat-pills">
               ${categories
                 .filter(c => allPlayers.some(p => p.category === c.id))
@@ -581,10 +609,52 @@ export function openChitDrawModal() {
                 }).join('')}
             </div>
           </div>
-          <button id="btn-shuffle-chits" class="btn btn-sm btn-gold" title="Re-shuffle all chits in this category">
+          <button id="btn-shuffle-chits" class="btn btn-sm btn-secondary" title="Re-shuffle all remaining chits in this category">
             <i data-lucide="shuffle"></i>
-            <span>Re-Shuffle Bowl 🔀</span>
+            <span>Shuffle Chits 🔀</span>
           </button>
+        </div>
+
+        <!-- Randomized Captain Turn Order Bar (On the Clock) -->
+        <div class="captain-turn-order-bar">
+          <div class="active-turn-spotlight" style="--team-accent: ${activeCaptainTeam ? activeCaptainTeam.color : 'var(--gold-trophy)'}">
+            <div class="turn-crown-box" style="background: ${activeCaptainTeam ? activeCaptainTeam.color : 'var(--gold-trophy)'}">
+              <i data-lucide="crown"></i>
+            </div>
+            <div class="turn-caption-info">
+              <span class="turn-label">👑 CURRENT CAPTAIN ON THE CLOCK (PICK #${turnNumber} / ${turnList.length}):</span>
+              <div class="turn-name-row">
+                <strong class="turn-captain-name">${activeCaptainTeam ? activeCaptainTeam.captain : 'N/A'}</strong>
+                <span class="turn-team-badge" style="background: ${activeCaptainTeam ? activeCaptainTeam.color : '#334155'}">
+                  ${activeCaptainTeam ? activeCaptainTeam.name : ''}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Captains Turn Lineup Queue -->
+          <div class="captain-lineup-queue">
+            <div class="queue-meta-header">
+              <span class="queue-title">🎲 Lineup for Category ${selectedCategory}:</span>
+              <button id="btn-reroll-captains" class="btn btn-xs btn-outline" title="Re-randomize captain lineup order for this category">
+                <i data-lucide="dice-5"></i>
+                <span>Re-Roll Lineup</span>
+              </button>
+            </div>
+            <div class="queue-chips-scroll">
+              ${turnList.map((t, idx) => {
+                const isCurrent = (turnIdx % turnList.length) === idx;
+                const isPast = (turnIdx % turnList.length) > idx;
+                return `
+                  <button class="queue-captain-chip ${isCurrent ? 'is-current' : (isPast ? 'is-past' : '')}" data-turn-idx="${idx}" style="--chip-team-color: ${t.color}">
+                    <span class="q-num">#${idx + 1}</span>
+                    <strong class="q-name">${t.captain}</strong>
+                    ${isCurrent ? '<span class="q-badge">Active</span>' : ''}
+                  </button>
+                `;
+              }).join('')}
+            </div>
+          </div>
         </div>
 
         <!-- Sealed Chits Stage (Randomized Order) -->
@@ -597,9 +667,13 @@ export function openChitDrawModal() {
                     <div class="chit-crest">
                       <img src="/images/logo.jpg" alt="JSG" class="chit-logo-icon" />
                     </div>
-                    <span class="chit-stamp">JSG 2026</span>
+                    <span class="chit-stamp">JSG BCL 2026</span>
                     <strong class="chit-serial">CHIT #${index + 1}</strong>
                     <span class="chit-cat-tag">Cat ${p.category}</span>
+                    <div class="chit-pick-hint">
+                      <i data-lucide="sparkles"></i>
+                      <span>Pick Chit</span>
+                    </div>
                   </div>
                 </div>
               `).join('')}
@@ -621,13 +695,45 @@ export function openChitDrawModal() {
     if (window.lucide) window.lucide.createIcons();
   };
 
-  renderChitDrawInner(true);
+  const handleFsChange = () => {
+    if (!document.fullscreenElement && modal.classList.contains('modal-true-fullscreen')) {
+      modal.classList.remove('modal-true-fullscreen');
+      renderChitDrawInner(false, false);
+    }
+  };
+  document.addEventListener('fullscreenchange', handleFsChange);
+
+  renderChitDrawInner(true, true);
   document.body.appendChild(modal);
 
   modal.addEventListener('click', (e) => {
+    // Close modal
     if (e.target.id === 'btn-close-draw-modal') {
+      document.removeEventListener('fullscreenchange', handleFsChange);
+      if (document.fullscreenElement) {
+        document.exitFullscreen().catch(() => {});
+      }
       modal.remove();
       renderDraftView();
+      return;
+    }
+
+    // Toggle Big Full Screen
+    if (e.target.closest('#btn-modal-fullscreen')) {
+      const isNowFull = modal.classList.toggle('modal-true-fullscreen');
+      sound.playClick();
+      if (isNowFull) {
+        if (modal.requestFullscreen) {
+          modal.requestFullscreen().catch(() => {});
+        } else if (document.documentElement.requestFullscreen) {
+          document.documentElement.requestFullscreen().catch(() => {});
+        }
+      } else {
+        if (document.exitFullscreen && document.fullscreenElement) {
+          document.exitFullscreen().catch(() => {});
+        }
+      }
+      renderChitDrawInner(false, false);
       return;
     }
 
@@ -636,15 +742,34 @@ export function openChitDrawModal() {
     if (catBtn) {
       selectedCategory = catBtn.dataset.cat;
       sound.playClick();
-      renderChitDrawInner(true); // Shuffle whenever new category chosen!
+      // Re-shuffle chits and generate NEW random captain lineup for this category!
+      renderChitDrawInner(true, true);
       return;
     }
 
-    // Re-shuffle button click
+    // Re-shuffle chits bowl
     if (e.target.closest('#btn-shuffle-chits')) {
       sound.playClick();
-      renderChitDrawInner(true);
+      renderChitDrawInner(true, false);
       showToast(`🔀 Chits in ${selectedCategory} bowl randomized!`, 'info');
+      return;
+    }
+
+    // Re-roll Captain turn lineup
+    if (e.target.closest('#btn-reroll-captains')) {
+      sound.playClick();
+      renderChitDrawInner(false, true);
+      showToast(`🎲 Captain selection order re-rolled for Cat ${selectedCategory}!`, 'info');
+      return;
+    }
+
+    // Click on a specific captain chip in queue to jump turn
+    const queueChip = e.target.closest('.queue-captain-chip');
+    if (queueChip) {
+      const targetIdx = parseInt(queueChip.dataset.turnIdx);
+      currentCaptainTurnIndex[selectedCategory] = targetIdx;
+      sound.playClick();
+      renderChitDrawInner(false, false);
       return;
     }
 
@@ -652,13 +777,26 @@ export function openChitDrawModal() {
     const ticket = e.target.closest('.sealed-chit-ticket');
     if (ticket) {
       const playerId = ticket.dataset.playerId;
-      revealChitCard(playerId, modal, () => renderChitDrawInner(false));
+      const turnList = captainTurnOrderMap[selectedCategory] || [];
+      const turnIdx = currentCaptainTurnIndex[selectedCategory] || 0;
+      const activeCaptainTeam = turnList.length > 0 ? turnList[turnIdx % turnList.length] : null;
+
+      revealChitCard(
+        playerId,
+        modal,
+        () => renderChitDrawInner(false, false),
+        activeCaptainTeam,
+        () => {
+          // Advance captain turn automatically
+          currentCaptainTurnIndex[selectedCategory] = (currentCaptainTurnIndex[selectedCategory] || 0) + 1;
+        }
+      );
       return;
     }
   });
 }
 
-function revealChitCard(playerId, parentModal, reloadCallback) {
+function revealChitCard(playerId, parentModal, reloadCallback, activeCaptainTeam, onAssigned) {
   const division = storage.getActiveDivision();
   const player = storage.getPlayers(division).find(p => p.id === playerId);
   const teams = storage.getTeams(division);
@@ -670,8 +808,8 @@ function revealChitCard(playerId, parentModal, reloadCallback) {
 
   // Grand confetti explosion
   confetti({
-    particleCount: 120,
-    spread: 100,
+    particleCount: 140,
+    spread: 110,
     origin: { y: 0.5 },
     colors: ['#f59e0b', '#10b981', '#06b6d4', '#ffffff']
   });
@@ -696,16 +834,32 @@ function revealChitCard(playerId, parentModal, reloadCallback) {
 
       <div class="reveal-divider"></div>
 
+      <!-- Prominent 1-Click Turn Assignment for Current Captain -->
+      ${activeCaptainTeam ? `
+        <div class="active-captain-assignment-banner" style="--team-accent: ${activeCaptainTeam.color}">
+          <div class="turn-callout-header">
+            <span class="turn-badge"><i data-lucide="crown"></i> CURRENT TURN TO PICK:</span>
+            <strong>Captain ${activeCaptainTeam.captain}</strong>
+          </div>
+          <button class="btn btn-gold btn-lg btn-confirm-turn-pick" data-team-id="${activeCaptainTeam.id}">
+            <i data-lucide="check-circle-2"></i>
+            <span>Add ${player.name} to ${activeCaptainTeam.captain}'s Team (${activeCaptainTeam.name})</span>
+          </button>
+        </div>
+      ` : ''}
+
       <div class="reveal-team-assign-box">
-        <h3>Assign to Captain's Team:</h3>
+        <h3>Or Override & Assign to Another Captain:</h3>
         <div class="reveal-teams-grid">
           ${teams.map(t => {
             const count = players.filter(p => p.teamId === t.id).length;
             const isFull = count >= t.slotsTotal;
+            const isTurn = activeCaptainTeam && activeCaptainTeam.id === t.id;
             return `
-              <button class="reveal-team-btn ${isFull ? 'disabled' : ''}" data-team-id="${t.id}" ${isFull ? 'disabled' : ''} style="--team-color: ${t.color}">
+              <button class="reveal-team-btn ${isFull ? 'disabled' : ''} ${isTurn ? 'is-turn-team' : ''}" data-team-id="${t.id}" ${isFull ? 'disabled' : ''} style="--team-color: ${t.color}">
                 <span class="btn-t-name">${t.name}</span>
                 <span class="btn-t-cap">Cap: ${t.captain || 'N/A'} (${count}/${t.slotsTotal})</span>
+                ${isTurn ? '<span class="turn-indicator-pill">On Clock</span>' : ''}
               </button>
             `;
           }).join('')}
@@ -724,12 +878,26 @@ function revealChitCard(playerId, parentModal, reloadCallback) {
       return;
     }
 
+    // 1-Click Current Captain Confirm Button
+    const confirmTurnBtn = e.target.closest('.btn-confirm-turn-pick');
+    if (confirmTurnBtn) {
+      const selectedTeamId = confirmTurnBtn.dataset.teamId;
+      spotlight.classList.add('hidden');
+      const ok = executeAssignment(player.id, selectedTeamId);
+      if (ok && onAssigned) onAssigned();
+      reloadCallback();
+      return;
+    }
+
+    // Regular team button click
     const tBtn = e.target.closest('.reveal-team-btn:not(.disabled)');
     if (tBtn) {
       const selectedTeamId = tBtn.dataset.teamId;
       spotlight.classList.add('hidden');
-      executeAssignment(player.id, selectedTeamId);
+      const ok = executeAssignment(player.id, selectedTeamId);
+      if (ok && onAssigned) onAssigned();
       reloadCallback();
+      return;
     }
   };
 }

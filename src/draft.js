@@ -567,7 +567,7 @@ export function openChitDrawModal() {
     const isFullscreen = modal.classList.contains('modal-true-fullscreen');
 
     modal.innerHTML = `
-      <div class="modal-card modal-fullscreen-chit glass-panel">
+      <div class="chit-arena-dialog glass-panel">
         <div class="modal-header">
           <div class="draw-title-group">
             <div class="draw-header-brand">
@@ -820,6 +820,7 @@ function revealChitCard(playerId, parentModal, reloadCallback, activeCaptainTeam
   spotlight.classList.remove('hidden');
   spotlight.innerHTML = `
     <div class="reveal-card-inner animate-reveal">
+      <button id="btn-close-spotlight" class="btn-close-modal reveal-close-x" title="Close">×</button>
       <div class="reveal-badge-glow">
         <span class="cat-pill-large cat-${player.category}">Category ${player.category}</span>
         <span class="chit-id">Chit #${player.chitNumber || 'BCL'}</span>
@@ -873,7 +874,7 @@ function revealChitCard(playerId, parentModal, reloadCallback, activeCaptainTeam
   if (window.lucide) window.lucide.createIcons();
 
   spotlight.onclick = (e) => {
-    if (e.target.id === 'btn-cancel-reveal') {
+    if (e.target === spotlight || e.target.id === 'btn-cancel-reveal' || e.target.closest('#btn-close-spotlight')) {
       spotlight.classList.add('hidden');
       return;
     }

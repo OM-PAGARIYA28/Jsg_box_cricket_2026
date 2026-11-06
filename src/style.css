@@ -2202,10 +2202,48 @@ body {
   gap: 0.75rem;
 }
 
-/* Arena Layout Diagram */
-.arena-diagram-section {
-  padding: 1.5rem;
+/* Rules Notice Box */
+.rules-notice-box {
+  padding: 2.5rem 2rem;
   margin-bottom: 2rem;
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  background: rgba(15, 23, 42, 0.6);
+  border: 1px dashed var(--glass-border);
+  border-radius: var(--radius-lg);
+}
+
+.notice-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: rgba(245, 158, 11, 0.15);
+  border: 1px solid rgba(245, 158, 11, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--gold-trophy);
+  flex-shrink: 0;
+}
+
+.notice-icon svg {
+  width: 28px;
+  height: 28px;
+}
+
+.notice-text h4 {
+  font-family: var(--font-display);
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: #fff;
+  margin-bottom: 0.35rem;
+}
+
+.notice-text p {
+  color: var(--text-muted);
+  font-size: 0.95rem;
+  max-width: 700px;
 }
 
 .arena-diagram-wrapper {

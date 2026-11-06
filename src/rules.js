@@ -1,4 +1,4 @@
-// Tournament Rules & Court Layout Infographic Module
+// Tournament Rules & Match Regulations Module
 import { storage } from './storage.js';
 import { sound } from './audio.js';
 import { showToast } from './draft.js';
@@ -19,60 +19,31 @@ export function renderRulesView() {
     <!-- Rules Hero Banner -->
     <div class="rules-hero-banner glass-panel">
       <div class="rules-hero-text">
-        <span class="pill-gold"><i data-lucide="shield-check"></i> OFFICIAL TOURNAMENT CODE</span>
-        <h2>JSG-PC BOX CRICKET LEAGUE 2026 - RULES & ARENA</h2>
-        <p>Comprehensive guidelines, scoring rules, court layout specifications, and fair play regulations.</p>
-        
-        <div class="rules-quick-stats">
-          <div class="stat-bubble">
-            <strong>8 Overs</strong>
-            <span>Per Match</span>
-          </div>
-          <div class="stat-bubble">
-            <strong>8 / 10 Players</strong>
-            <span>Men's / Women's</span>
-          </div>
-          <div class="stat-bubble">
-            <strong>Top Net = OUT</strong>
-            <span>Ceiling Rule</span>
-          </div>
-          <div class="stat-bubble">
-            <strong>Side Nets = 1</strong>
-            <span>Contact Run</span>
-          </div>
-        </div>
+        <span class="pill-gold"><i data-lucide="shield-check"></i> TOURNAMENT DIRECTIVES</span>
+        <h2>JSG-PC BOX CRICKET LEAGUE 2026 - RULES</h2>
+        <p>Official match regulations, playing conditions, and league code of conduct. (Will be updated once finalized by the committee).</p>
       </div>
 
       <div class="rules-hero-actions">
         <button id="btn-print-rules" class="btn btn-secondary">
           <i data-lucide="printer"></i>
-          <span>Print Rulebook</span>
+          <span>Print Rules</span>
         </button>
         <button id="btn-upload-flyer" class="btn btn-primary">
           <i data-lucide="image-plus"></i>
-          <span>Upload Custom Flyer</span>
+          <span>Upload Rules Flyer / Document</span>
         </button>
       </div>
     </div>
 
-    <!-- Arena Layout Visual Diagram Section -->
-    <div class="arena-diagram-section glass-panel">
-      <div class="section-title-row">
-        <div class="title-with-icon">
-          <i data-lucide="layout"></i>
-          <h3>Official Box Cricket Court Layout & Scoring Zones</h3>
-        </div>
-        <button id="btn-zoom-diagram" class="btn btn-sm btn-outline">
-          <i data-lucide="maximize-2"></i>
-          <span>Expand View</span>
-        </button>
+    <!-- Official Notice / Waiting for committee release banner -->
+    <div class="rules-notice-box glass-panel">
+      <div class="notice-icon">
+        <i data-lucide="clipboard-list"></i>
       </div>
-
-      <div class="arena-diagram-wrapper">
-        <img id="rules-arena-img" src="/images/rules-diagram.jpg" alt="JSG Box Cricket Court Rules Diagram" class="arena-diagram-image" />
-        <div class="diagram-overlay-caption">
-          <span>💡 Tap or click image to view full high-resolution diagram</span>
-        </div>
+      <div class="notice-text">
+        <h4>Official Rules Being Finalized</h4>
+        <p>The organizing committee is finalizing the tournament playing conditions and turf guidelines. Any newly updated rules or flyers will appear right here.</p>
       </div>
     </div>
 
@@ -82,7 +53,7 @@ export function renderRulesView() {
         <div class="section-title-row">
           <div class="title-with-icon">
             <i data-lucide="images"></i>
-            <h3>Uploaded League Posters & Announcements</h3>
+            <h3>Uploaded Rules & League Documents</h3>
           </div>
         </div>
         <div class="flyers-gallery-grid">
@@ -99,39 +70,6 @@ export function renderRulesView() {
       </div>
     ` : ''}
 
-    <!-- Detailed Rule Cards Grid -->
-    <div class="rules-cards-grid">
-      ${rules.map(rule => `
-        <div class="rule-card glass-panel">
-          <div class="rule-card-header">
-            <div class="rule-icon-box">
-              <i data-lucide="${rule.icon || 'file-text'}"></i>
-            </div>
-            <div class="rule-header-content">
-              <div class="rule-badges">
-                <span class="badge-cat">${rule.category}</span>
-                <span class="badge-status">${rule.badge}</span>
-              </div>
-              <h4 class="rule-title">${rule.title}</h4>
-            </div>
-          </div>
-
-          <div class="rule-summary-box">
-            <p>${rule.summary}</p>
-          </div>
-
-          <ul class="rule-details-list">
-            ${rule.details.map(pt => `
-              <li>
-                <i data-lucide="check-circle-2"></i>
-                <span>${pt}</span>
-              </li>
-            `).join('')}
-          </ul>
-        </div>
-      `).join('')}
-    </div>
-
     <!-- Hidden file input for flyer upload -->
     <input type="file" id="flyer-file-input" accept="image/*" style="display: none;" />
   `;
@@ -144,12 +82,6 @@ function setupRulesEventListeners() {
   if (!container) return;
 
   container.addEventListener('click', (e) => {
-    // Zoom court diagram
-    if (e.target.closest('#btn-zoom-diagram') || e.target.closest('#rules-arena-img')) {
-      openImageLightbox('/images/rules-diagram.jpg', 'JSG Box Cricket Court Layout & Scoring Zones');
-      return;
-    }
-
     // Print rules
     if (e.target.closest('#btn-print-rules')) {
       window.print();
@@ -169,7 +101,7 @@ function setupRulesEventListeners() {
       const imgId = delFlyerBtn.dataset.imgId;
       if (confirm('Delete this uploaded flyer?')) {
         storage.deleteCustomImage(imgId);
-        showToast('Flyer removed.', 'info');
+        showToast('Document removed.', 'info');
         renderRulesView();
       }
       return;
@@ -189,7 +121,7 @@ function setupRulesEventListeners() {
       const file = e.target.files[0];
       const reader = new FileReader();
       reader.onload = (event) => {
-        const caption = prompt('Enter a title or caption for this flyer/rules image:', file.name.replace(/\.[^/.]+$/, '')) || 'Tournament Flyer';
+        const caption = prompt('Enter a title or caption for this rules document:', file.name.replace(/\.[^/.]+$/, '')) || 'Official Tournament Rules';
         storage.addCustomImage({
           id: `flyer-${Date.now()}`,
           url: event.target.result,
@@ -197,7 +129,7 @@ function setupRulesEventListeners() {
           timestamp: new Date().toISOString()
         });
         sound.playDraftSuccess();
-        showToast('Flyer uploaded and saved!', 'success');
+        showToast('Rules document uploaded and saved!', 'success');
         renderRulesView();
       };
       reader.readAsDataURL(file);

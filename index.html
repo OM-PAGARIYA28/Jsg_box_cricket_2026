@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/jpeg" href="/images/logo.jpg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>JSG-PC BOX CRICKET LEAGUE 2026 | Official Tournament Hub</title>
+    
+    <!-- Modern Typography: Outfit (Athletic Headings) & Inter (Data & Body) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@500;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="/src/style.css" />
+  </head>
+  <body>
+    <div id="app" class="app-root">
+      
+      <!-- Top Primary Navigation & Header -->
+      <header class="app-header">
+        <div class="header-container">
+          
+          <!-- Brand Logo & Title -->
+          <div class="brand-group">
+            <div class="brand-logo-wrap">
+              <img src="/images/logo.jpg" alt="JSG-PC Box Cricket 2026 Logo" class="brand-logo-img" />
+              <div class="logo-glow"></div>
+            </div>
+            <div class="brand-titles">
+              <div class="brand-badge-row">
+                <span class="live-status-pill"><span class="live-dot"></span> 2026 OFFICIAL</span>
+                <span class="edition-pill">CHAMPIONSHIP</span>
+              </div>
+              <h1 class="brand-main-title">JSG-PC BOX CRICKET LEAGUE 2026</h1>
+            </div>
+          </div>
+
+          <!-- Division Switcher Pill (Men's 10 Teams vs Women's 4 Teams) -->
+          <div class="division-control-wrap">
+            <div class="division-switcher" id="division-toggle">
+              <button class="div-btn active" data-division="male" id="btn-div-male">
+                <i data-lucide="trophy"></i>
+                <span>Men's (10 Teams)</span>
+              </button>
+              <button class="div-btn" data-division="female" id="btn-div-female">
+                <i data-lucide="sparkles"></i>
+                <span>Women's (4 Teams)</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Utility Actions (Audio, Fullscreen, Backup) -->
+          <div class="header-utilities">
+            <button id="btn-toggle-sound" class="btn-icon" title="Toggle Sound Effects">
+              <i data-lucide="volume-2"></i>
+            </button>
+            <button id="btn-toggle-projector" class="btn-icon" title="Projector / Big Screen Mode">
+              <i data-lucide="tv"></i>
+            </button>
+            <div class="dropdown-wrap">
+              <button id="btn-data-menu" class="btn-icon" title="Data Backup & Reset">
+                <i data-lucide="settings"></i>
+              </button>
+              <div class="dropdown-menu glass-panel" id="data-dropdown">
+                <button id="btn-export-backup" class="dropdown-item">
+                  <i data-lucide="download"></i>
+                  <span>Export Backup (JSON)</span>
+                </button>
+                <label class="dropdown-item file-label">
+                  <i data-lucide="upload"></i>
+                  <span>Restore Backup (JSON)</span>
+                  <input type="file" id="input-import-json" accept=".json" style="display: none;" />
+                </label>
+                <div class="dropdown-divider"></div>
+                <button id="btn-reset-league" class="dropdown-item text-danger">
+                  <i data-lucide="refresh-cw"></i>
+                  <span>Reset to Defaults</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Navigation Tabs Bar -->
+        <nav class="main-tabs-nav">
+          <div class="tabs-container">
+            <button class="nav-tab active" data-target="draft-view">
+              <i data-lucide="sparkles"></i>
+              <span>Chit Draw & Draft Room</span>
+            </button>
+            <button class="nav-tab" data-target="teams-view">
+              <i data-lucide="shield"></i>
+              <span>Franchise Teams & Rosters</span>
+            </button>
+            <button class="nav-tab" data-target="schedule-view">
+              <i data-lucide="calendar"></i>
+              <span>Match Schedule & Scores</span>
+            </button>
+            <button class="nav-tab" data-target="rules-view">
+              <i data-lucide="book-open"></i>
+              <span>Rules & Arena Layout</span>
+            </button>
+          </div>
+        </nav>
+      </header>
+
+      <!-- Main Dynamic Content Views Container -->
+      <main class="app-main-content">
+        
+        <!-- Tab 1: Chit Draw & Draft View -->
+        <section id="draft-view" class="tab-view active">
+          <div id="draft-view-content" class="view-content-wrapper"></div>
+        </section>
+
+        <!-- Tab 2: Teams & Rosters View -->
+        <section id="teams-view" class="tab-view">
+          <div id="teams-view-content" class="view-content-wrapper"></div>
+        </section>
+
+        <!-- Tab 3: Match Schedule & Scores View -->
+        <section id="schedule-view" class="tab-view">
+          <div id="schedule-view-content" class="view-content-wrapper"></div>
+        </section>
+
+        <!-- Tab 4: Rules & Arena Layout View -->
+        <section id="rules-view" class="tab-view">
+          <div id="rules-view-content" class="view-content-wrapper"></div>
+        </section>
+
+      </main>
+
+      <!-- Global Tournament Footer -->
+      <footer class="app-footer">
+        <div class="footer-container">
+          <div class="footer-left">
+            <img src="/images/logo.jpg" alt="JSG Official Logo" class="footer-jsg-logo" />
+            <div>
+              <strong>JSG-PC BOX CRICKET LEAGUE 2026</strong>
+              <span>• Jain Social Groups Int. Federation • "Grow more to Serve more" •</span>
+            </div>
+          </div>
+          <div class="footer-right">
+            <span>Live Auto-Save Enabled</span>
+            <div class="status-indicator"></div>
+          </div>
+        </div>
+      </footer>
+
+    </div>
+
+    <!-- Main Module Script -->
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>

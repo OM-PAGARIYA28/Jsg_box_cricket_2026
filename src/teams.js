@@ -81,7 +81,7 @@ export function renderTeamsView() {
             <div class="squad-roster-list">
               <div class="roster-header">
                 <span>Player</span>
-                <span>Category & Role</span>
+                <span>Contact Number</span>
               </div>
               ${squad.length > 0 ? squad.map((p, pIdx) => `
                 <div class="roster-item ${p.name === team.captain ? 'is-captain-row' : ''}">
@@ -91,8 +91,17 @@ export function renderTeamsView() {
                     ${p.name === team.captain ? `<span class="c-badge">(C)</span>` : ''}
                   </div>
                   <div class="p-right">
-                    <span class="category-badge cat-${p.category}">${p.category}</span>
-                    <span class="role-desc">${p.role || 'Member'}</span>
+                    ${p.phone ? `
+                      <a href="tel:${p.phone.split('/')[0].trim().replace(/[^0-9]/g, '')}" class="player-phone-chip" title="Call ${p.name}">
+                        <i data-lucide="phone"></i>
+                        <span>${p.phone}</span>
+                      </a>
+                    ` : `
+                      <span class="player-phone-chip is-na">
+                        <i data-lucide="phone-off"></i>
+                        <span>N/A</span>
+                      </span>
+                    `}
                   </div>
                 </div>
               `).join('') : `
@@ -180,7 +189,8 @@ function copySingleTeamWhatsApp(teamId) {
 
   squad.forEach((p, idx) => {
     const isCap = p.name === team.captain ? ' (C)' : '';
-    text += `${idx + 1}. ${p.name}${isCap} [Cat ${p.category} - ${p.role}]\n`;
+    const phoneInfo = p.phone ? ` 📱 ${p.phone}` : '';
+    text += `${idx + 1}. ${p.name}${isCap}${phoneInfo}\n`;
   });
 
   text += `------------------------------------\n`;
@@ -208,7 +218,8 @@ function copyAllTeamsWhatsApp() {
     text += `*TEAM ${tIdx + 1}: ${t.name.toUpperCase()}*\n`;
     text += `👑 Captain: ${t.captain || 'TBD'}\n`;
     squad.forEach((p, pIdx) => {
-      text += `  ${pIdx + 1}. ${p.name} [Cat ${p.category}]\n`;
+      const phoneInfo = p.phone ? ` (📱 ${p.phone})` : '';
+      text += `  ${pIdx + 1}. ${p.name}${phoneInfo}\n`;
     });
     text += `\n`;
   });
@@ -229,12 +240,12 @@ function exportTeamsCSV() {
   const players = storage.getPlayers(division);
 
   let csvContent = "data:text/csv;charset=utf-8,";
-  csvContent += "Team ID,Team Name,Captain,Player Name,Category,Role,Chit Number\n";
+  csvContent += "Team ID,Team Name,Captain,Player Name,Phone Number,Age,Category,Role,Chit Number\n";
 
   teams.forEach(t => {
     const squad = players.filter(p => p.teamId === t.id);
     squad.forEach(p => {
-      csvContent += `"${t.id}","${t.name}","${t.captain || ''}","${p.name}","${p.category}","${p.role}","${p.chitNumber || ''}"\n`;
+      csvContent += `"${t.id}","${t.name}","${t.captain || ''}","${p.name}","${p.phone || ''}","${p.age || ''}","${p.category}","${p.role}","${p.chitNumber || ''}"\n`;
     });
   });
 

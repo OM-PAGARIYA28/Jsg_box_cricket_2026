@@ -80,11 +80,23 @@ class LeagueStorage {
   getPlayers(division = null) {
     const div = division || this.getActiveDivision();
     const key = div === 'male' ? STORAGE_KEYS.PLAYERS_MALE : STORAGE_KEYS.PLAYERS_FEMALE;
+    const defaults = div === 'male' ? INITIAL_MALE_PLAYERS : INITIAL_FEMALE_PLAYERS;
     try {
       const data = localStorage.getItem(key);
-      return data ? JSON.parse(data) : (div === 'male' ? INITIAL_MALE_PLAYERS : INITIAL_FEMALE_PLAYERS);
+      if (!data) return defaults;
+      const players = JSON.parse(data);
+      // Ensure phone and age are always populated even if loaded from older localStorage
+      return players.map(p => {
+        if (!p.phone) {
+          const match = defaults.find(d => d.id === p.id || d.name.toLowerCase() === p.name.toLowerCase());
+          if (match) {
+            return { ...p, phone: match.phone, age: match.age };
+          }
+        }
+        return p;
+      });
     } catch {
-      return div === 'male' ? INITIAL_MALE_PLAYERS : INITIAL_FEMALE_PLAYERS;
+      return defaults;
     }
   }
 

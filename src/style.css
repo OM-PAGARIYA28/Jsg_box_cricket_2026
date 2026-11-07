@@ -2167,6 +2167,42 @@ body {
   color: var(--text-dim);
 }
 
+.player-phone-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.22rem 0.65rem;
+  border-radius: var(--radius-sm);
+  background: rgba(16, 185, 129, 0.12);
+  border: 1px solid rgba(16, 185, 129, 0.35);
+  color: #34d399;
+  font-family: var(--font-body);
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-decoration: none;
+  letter-spacing: 0.02em;
+  transition: all var(--transition-fast);
+}
+
+.player-phone-chip:hover {
+  background: rgba(16, 185, 129, 0.25);
+  border-color: #34d399;
+  color: #fff;
+  transform: translateY(-1px);
+}
+
+.player-phone-chip svg {
+  width: 13px;
+  height: 13px;
+  color: #10b981;
+}
+
+.player-phone-chip.is-na {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.1);
+  color: var(--text-dim);
+}
+
 .no-squad-msg {
   display: flex;
   flex-direction: column;
